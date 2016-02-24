@@ -57,6 +57,41 @@ class File(Item):
         box_response = self._session.get(url, expect_json_response=False)
         return box_response.content
 
+    def get_versions(self):
+        """
+        get file version list
+        append by H.Okada 2016/2/16
+        
+        : returns:
+            file version informations string.
+        : rtype:
+            `strings`
+        """
+        url = self.get_url('versions')
+        box_response = self._session.get(url, expect_json_response=False)
+        return box_response.content
+    
+    def download_to_version(self, writeable_stream, version_id):
+        """
+        Download the specified version file; write ti to given stream
+        append by H.Okada 2016/2/16
+        
+        :param writeable_stream:
+            A file-like object where bytes can be written into.
+        :type writeable_stream:
+            `file`
+        :param version_id
+            target file version
+        :type version_id:
+            `integer`
+        """
+        param='?version=' + str(version_id)
+        url = self.get_url('content',param)
+        # append version URL parameter
+        box_response = self._session.get(url, expect_json_response=False, stream=True)
+        for chunk in box_response.network_response.response_as_stream.stream(decode_content=True):
+            writeable_stream.write(chunk)
+
     def download_to(self, writeable_stream):
         """
         Download the file; write it to the given stream.
